@@ -1,11 +1,28 @@
-FROM node:18 AS build
-WORKDIR /app
-COPY my-react-app/package.json my-react-app/package-lock.json ./
-RUN npm install
-COPY my-react-app .
-RUN npm run build
+server {
+    listen 80;
 
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+    server_name togaruashok1996-api.contentecho.in;
+
+    location / {
+        proxy_pass http://strapi-service:1337;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80;
+
+    server_name togaruashok1996.contentecho.in;
+
+    location / {
+        proxy_pass http://react-service:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
