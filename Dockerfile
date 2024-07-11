@@ -1,8 +1,11 @@
-# Use the official Nginx image from Docker Hub
-FROM nginx:latest
+ROM node:18 AS build
+WORKDIR /app
+COPY my-react-app/package.json my-react-app/package-lock.json ./
+RUN npm install
+COPY my-react-app .
+RUN npm run build
 
-# Copy the custom Nginx configuration file into the container
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
